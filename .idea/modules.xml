@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NomsMongo.iml" filepath="$PROJECT_DIR$/.idea/modules/NomsMongo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NomsMongo_main.iml" filepath="$PROJECT_DIR$/.idea/modules/NomsMongo_main.iml" group="NomsMongo" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NomsMongo_test.iml" filepath="$PROJECT_DIR$/.idea/modules/NomsMongo_test.iml" group="NomsMongo" />
+    </modules>
+  </component>
+</project>
