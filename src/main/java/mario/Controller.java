@@ -3,15 +3,13 @@ package mario;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
-import com.sun.xml.internal.txw2.Document;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
-import java.util.Arrays;
-
-import static javafx.scene.input.KeyCode.T;
 
 /**
  * Created by Vipi on 18/04/2016.
@@ -24,7 +22,9 @@ public class Controller {
     @FXML
     private TextArea txtAinfo;
     @FXML
-    private ListView listfechas;
+    private ListView<java.lang.String> listfechas;
+    @FXML
+    private ListView<java.lang.String> listnoms;
     @FXML
     private Button btnbuscar;
     @FXML
@@ -32,46 +32,83 @@ public class Controller {
     @FXML
     private CheckBox checkcas;
     @FXML
-    public void BuscarNombre(Event event){
-        String nomcastella= txtcas.getText();
-        String nomcatala= txtcat.getText();
+    private DatePicker datecontrol;
+
+    java.lang.String idioma;
+    java.lang.String nombreAbuscar;
+    private void comprovarFecha(String mes){
+        if(mes.equals("JANUARY")){
+            mes = "de gener";
+        }else if (mes.equals("FEBRUARY")){
+            //// TODO: 22/04/2016  
+        }
+    }
+    public void initialize(){
+        datecontrol.setOnAction(event -> {
+            LocalDate date = datecontrol.getValue();
+            String dia = String.valueOf(date.getDayOfMonth());
+            Month mes = date.getMonth();
+            System.out.println(date.getMonth());
+            MongoClient mongoclient = new MongoClient();
+            MongoDatabase db = mongoclient.getDatabase("cendrassos");
+            String fecha = "03 de febrer";
+
+            if(dia.length()== 1){
+                dia= "0"+dia;
+            }
+            String fecha2 = dia+ " de febrer";
+            System.out.println(fecha2);
+            FindIterable<org.bson.Document> fechas = db.getCollection("noms2").find(new org.bson.Document("sants",fecha2));
+            if(listnoms.getItems().isEmpty()){
+                listnoms.getItems().clear();
+            }
+            for(org.bson.Document fe : fechas){
+                String cat = (String) fe.get("catala");
+                listnoms.getItems().add(cat);
+            }
+        });
+    }
+
+    private void buscarporcataocasta(){
+        if(checkcas.isSelected()){
+            idioma = checkcas.getText().toLowerCase();
+            nombreAbuscar = txtcas.getText();
+        }if(checkcat.isSelected()){
+            idioma = checkcat.getText().toLowerCase();
+            nombreAbuscar = txtcat.getText();
+        }
+
         MongoClient mongoclient = new MongoClient();
         MongoDatabase db = mongoclient.getDatabase("cendrassos");
 
-        if(!nomcastella.isEmpty()){
-            FindIterable<org.bson.Document> nombreCastella = db.getCollection("noms2").find(new org.bson.Document("castella",nomcastella));
-            for (org.bson.Document coll: nombreCastella){
-                txtcat.setText((String) coll.get("catala"));
-                if(coll.containsKey("observacions")){
-                    txtAinfo.setText( coll.getString("observacions"));
+        if(!idioma.isEmpty()){
+            FindIterable<org.bson.Document> personas = db.getCollection("noms2").find(new org.bson.Document(idioma,nombreAbuscar));
+            for (org.bson.Document persona : personas){
+                if(persona.containsKey("observacions")){
+                    txtAinfo.setText( persona.getString("observacions"));
                 }else{
-                    txtAinfo.setText("");
+                    txtAinfo.setText("No hay observaciones");
                 }
                 if(!listfechas.getItems().isEmpty()){
                     listfechas.getItems().clear();
                 }
-                if(!coll.get("sants").equals("")){
-                    System.out.println("Contiene valores");
-                    ArrayList sants= (ArrayList) coll.get("sants");
-                    System.out.println(sants.isEmpty());
-                    for(int i =0;i<sants.size();i++){
-                        System.out.println(sants.get(i));
+                ArrayList<java.lang.String> sants= (ArrayList<java.lang.String>) persona.get("sants");
+                for (int i = 0; i<sants.size();i++){
+                    if(sants.get(i).length() == 0){
+                        System.out.println("vacio ");
+                        listfechas.getItems().add("No contiene fecha");
+                    }else {
                         listfechas.getItems().add(sants.get(i));
                     }
                 }
-
-            }
-        }if(!nomcatala.isEmpty() ){
-            FindIterable<org.bson.Document> nombreCatala = db.getCollection("noms2").find(new org.bson.Document("catala",nomcatala));
-            for (org.bson.Document coll: nombreCatala){
-                System.out.println(coll);
             }
         }
-
-
-
-
     }
+    @FXML
+    public void BuscarNombre(Event event) {
+        buscarporcataocasta();
+    }
+
     @FXML
     public void  buscarCatala(Event event){
         if(checkcat.isSelected()){
